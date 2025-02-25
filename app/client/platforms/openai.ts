@@ -275,31 +275,17 @@ export class ChatGPTApi implements LLMApi {
             model.name === modelConfig.model &&
             model?.provider?.providerName === ServiceProvider.Azure,
         );
-        // 新增部分开始
-        const modelName = (model?.displayName ?? model?.name) as string;
-        const isSpecialModel = [
-            "DeepSeek-R1-671B-NSCC-GZ", 
-            "starlight/DeepSeek-R1-671B"
-        ].includes(modelName);
-
-        if (isSpecialModel) {
-            chatPath = "https://ds-api.hanabi-ai.cn/https://deepseek.nscc-gz.cn/v1/chat/completions";
-        } else {
-        // 新增部分结束
-  
-            if (useAzure) { // 原始条件的假设（原题中变量未展示）
-                chatPath = this.path(
-                    (isDalle3 ? Azure.ImagePath : Azure.ChatPath)(
-                        modelName,
-                        useCustomConfig ? useAccessStore.getState().azureApiVersion : ""
-                    ),
-                );
-            } else {
-                chatPath = this.path(
-                    isDalle3 ? Openai.ImagePath : OpenaiPath.ChatPath, // Path修正为规范写法
-                );
-            }
-        } // if结束括号需与新增else对齐
+        chatPath = this.path(
+          (isDalle3 ? Azure.ImagePath : Azure.ChatPath)(
+            (model?.displayName ?? model?.name) as string,
+            useCustomConfig ? useAccessStore.getState().azureApiVersion : "",
+          ),
+        );
+      } else {
+        chatPath = this.path(
+          isDalle3 ? OpenaiPath.ImagePath : OpenaiPath.ChatPath,
+        );
+      }
       if (shouldStream) {
         let index = -1;
         const [tools, funcs] = usePluginStore
